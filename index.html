@@ -456,6 +456,7 @@ const CONTACTS = [
   { name: "Todd Jackson", location: "TX · San Antonio", handles: ["jtodd_jackson"] },
   { name: "Somer Padilla", location: "TX · Spring", handles: ["somerlynne"] },
   { name: "Roy Towse", location: "WA · Bellevue/Seattle Area", handles: ["roytowse"] },
+  { name: "Patrick Crowthers", location: "WA · Seattle", handles: ["patrick_crowthers"] },
   { name: "Shar Borg", location: "WI · Milwaukee", handles: ["sharborgmilwaukee"] },
 ];
 
@@ -469,7 +470,10 @@ CONTACTS.forEach(c => {
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'alpenbloom_followed_v1';
+const PRESEED = ["patrick_crowthers"];
 let followed = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+PRESEED.forEach(id => followed.add(id));
+localStorage.setItem(STORAGE_KEY, JSON.stringify([...followed]));
 let currentTab = 'all';
 let sessionQueue = [];   // array of item ids remaining in session
 let sessionActive = false;
