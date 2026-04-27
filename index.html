@@ -456,6 +456,7 @@ const CONTACTS = [
   { name: "Todd Jackson", location: "TX · San Antonio", handles: ["jtodd_jackson"] },
   { name: "Somer Padilla", location: "TX · Spring", handles: ["somerlynne"] },
   { name: "Roy Towse", location: "WA · Bellevue/Seattle Area", handles: ["roytowse"] },
+  { name: "Emily Shepodd", location: "WA · Seattle", handles: ["emilyshepodd"] },
   { name: "Patrick Crowthers", location: "WA · Seattle", handles: ["patrick_crowthers"] },
   { name: "Shar Borg", location: "WI · Milwaukee", handles: ["sharborgmilwaukee"] },
 ];
@@ -470,7 +471,26 @@ CONTACTS.forEach(c => {
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'alpenbloom_followed_v1';
-const PRESEED = ["patrick_crowthers"];
+const PRESEED = [
+  // manually followed outside the tool
+  "patrick_crowthers",
+  "emilyshepodd",
+  // colored rows (teal) from spreadsheet
+  "thekarasgroup",
+  "yourowntahoe_scott.willers",
+  "carijaneyoung",
+  "surfcityestates",
+  "realtor_astha.mathur",
+  "andrearuportteam",
+  "thegoodlifedenver",
+  "megallagher_22",
+  "thelizcaldwellgroup",
+  "kyleboz",
+  "mjrgroupe",
+  "sellbuymaria",
+  "kathleenpogany",
+  "rmluxurygroup",
+];
 let followed = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
 PRESEED.forEach(id => followed.add(id));
 localStorage.setItem(STORAGE_KEY, JSON.stringify([...followed]));
