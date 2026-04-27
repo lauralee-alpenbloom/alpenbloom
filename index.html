@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instagram Bulk Follow — Alpenbloom Network</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #252525;
+      --border: #333;
+      --accent: #e1306c;
+      --accent2: #833ab4;
+      --text: #f0f0f0;
+      --muted: #888;
+      --green: #3ec65b;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header svg { flex-shrink: 0; }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* --- progress bar --- */
+    .progress-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .progress-label { font-size: 0.85rem; color: var(--muted); }
+    .progress-count { font-size: 1.4rem; font-weight: 700; }
+
+    .bar-wrap {
+      background: var(--surface2);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      transition: width 0.4s ease;
+    }
+
+    /* --- action buttons --- */
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover:not(:disabled) { border-color: var(--muted); }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #c0392b44;
+      color: #e74c3c;
+    }
+
+    .btn-danger:hover { border-color: #e74c3c88; }
+
+    /* --- session banner --- */
+    .session-banner {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .session-banner.active { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+    .session-info { font-size: 0.9rem; }
+    .session-info strong { color: var(--accent); }
+
+    .session-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* --- filter bar --- */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+
+    .filter-bar input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 0.875rem;
+      outline: none;
+    }
+
+    .filter-bar input:focus { border-color: var(--accent2); }
+
+    .filter-tab {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .filter-tab.active {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--accent2);
+    }
+
+    /* --- grid --- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: border-color 0.15s;
+      position: relative;
+    }
+
+    .card:hover { border-color: #555; }
+
+    .card.followed {
+      border-color: var(--green);
+      opacity: 0.6;
+    }
+
+    .card.current-session {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px #e1306c22;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .card-body { flex: 1; min-width: 0; }
+
+    .card-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-location {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .card-handle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-handle:hover { text-decoration: underline; }
+
+    .followed-badge {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card.followed .followed-badge { display: block; }
+
+    .card-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .card-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+
+    .card-btn:hover { opacity: 0.8; }
+
+    .btn-open {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #fff;
+    }
+
+    .btn-mark {
+      background: #1e3a26;
+      color: var(--green);
+      border: 1px solid #2a5234;
+    }
+
+    .btn-unmark {
+      background: #2a1e1e;
+      color: #e74c3c;
+      border: 1px solid #5c2a2a;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state svg { margin-bottom: 12px; opacity: 0.4; }
+
+    /* multi-handle cards */
+    .card-handles { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+    <circle cx="12" cy="12" r="4"/>
+    <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none"/>
+  </svg>
+  <div>
+    <h1>Instagram Bulk Follow</h1>
+    <p>Alpenbloom Network — Updated Oct 31, 2025</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Progress -->
+  <div class="progress-card">
+    <div class="progress-row">
+      <span class="progress-label">Following progress</span>
+      <span class="progress-count"><span id="followed-count">0</span> / <span id="total-count">0</span></span>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-fill" id="progress-bar" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Top actions -->
+  <div class="actions">
+    <button class="btn btn-primary" id="btn-start-session" onclick="startSession()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start Follow Session
+    </button>
+    <button class="btn btn-outline" onclick="markAllFollowed()">
+      Mark All as Followed
+    </button>
+    <button class="btn btn-danger" onclick="resetProgress()">
+      Reset Progress
+    </button>
+  </div>
+
+  <!-- Session banner -->
+  <div class="session-banner" id="session-banner">
+    <div class="session-info">
+      Now following: <strong id="session-current-name"></strong>
+      &nbsp;·&nbsp; <span id="session-pos"></span> remaining
+    </div>
+    <div class="session-btns">
+      <button class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px" onclick="reOpenCurrent()">Re-open Profile</button>
+      <button class="btn btn-primary" style="font-size:0.8rem; padding:7px 14px" onclick="markCurrentAndAdvance()">✓ Followed — Open Next</button>
+      <button class="btn btn-outline" style="font-size:0.8rem; padding:7px 14px" onclick="skipCurrent()">Skip</button>
+      <button class="btn btn-danger" style="font-size:0.8rem; padding:7px 14px" onclick="endSession()">End Session</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <input type="text" id="search" placeholder="Search by name, handle, or location…" oninput="renderList()" />
+    <button class="filter-tab active" id="tab-all" onclick="setTab('all')">All</button>
+    <button class="filter-tab" id="tab-unfollowed" onclick="setTab('unfollowed')">To Follow</button>
+    <button class="filter-tab" id="tab-followed" onclick="setTab('followed')">Followed</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="empty-state" style="display:none">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <p>No accounts match your search.</p>
+  </div>
+
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const CONTACTS = [
+  { name: "Chris Karas", location: "AZ · Paradise Valley", handles: ["thekarasgroup"] },
+  { name: "Scott Willers", location: "CA · Lake Tahoe", handles: ["yourowntahoe_scott.willers"] },
+  { name: "Evan Dolmatsky", location: "CA · Los Angeles", handles: ["evandolmatsky"] },
+  { name: "Cari Young", location: "CA · Orange County", handles: ["carijaneyoung"] },
+  { name: "Kimberly Ward & Shawndy Linquist", location: "CA · Santa Cruz", handles: ["surfcityestates"] },
+  { name: "Jason Hoffman", location: "CA · San Francisco", handles: ["jasonhoffmansf"] },
+  { name: "Astha Mathur", location: "CA · Silicon Valley", handles: ["realtor_astha.mathur"] },
+  { name: "Maurice Tegelaar", location: "CA · Sonoma", handles: ["livinginwinecountrygroup"] },
+  { name: "Brian Perry", location: "CA · Roseville", handles: ["brianperryrealestategroup", "brianandrewperry"] },
+  { name: "Andrea Ruport", location: "CA · Alameda/Oakland", handles: ["andrearuportteam"] },
+  { name: "Cari Higgins", location: "CO · Boulder", handles: ["higginskalushcollective"] },
+  { name: "David Schlichter", location: "CO · Denver", handles: ["thegoodlifedenver"] },
+  { name: "Cheryl Foote", location: "CO · Steamboat Springs", handles: ["cheryl_foote"] },
+  { name: "Patrick Barrett", location: "CO · Vail", handles: ["patrickbarrettvail"] },
+  { name: "Mary Ellen Gallagher", location: "CT · Fairfield County", handles: ["megallagher_22"] },
+  { name: "Julie Grace Burke", location: "CT · Greenwich", handles: ["juliegraceburke"] },
+  { name: "Amanda Provost", location: "DC · DC/MD/VA", handles: ["amandaprovost_realestate"] },
+  { name: "Liz Caldwell", location: "FL · Broward", handles: ["thelizcaldwellgroup"] },
+  { name: "Jeremy Olsher", location: "FL · Boca Raton", handles: ["jeremyolsher"] },
+  { name: "Kyle Bosworth", location: "FL · Jacksonville", handles: ["kyleboz"] },
+  { name: "Amy Simmonds", location: "FL · Jupiter", handles: ["the_simmonds_team"] },
+  { name: "Melissa J. Rubin", location: "FL · Miami", handles: ["mjrgroupe"] },
+  { name: "Amanda Van Slyke", location: "FL · Naples", handles: ["naplescoastalliving"] },
+  { name: "Maria Nunez", location: "FL · Orlando", handles: ["sellbuymaria"] },
+  { name: "Peter Arner", location: "FL · Tampa Bay", handles: ["peter.arner"] },
+  { name: "Kathleen Pogany", location: "FL · Vero Beach", handles: ["kathleenpogany"] },
+  { name: "Mike Toltzis", location: "GA · Atlanta", handles: ["atlantahomesrealestate"] },
+  { name: "Rafael Murillo", location: "IL · Chicago", handles: ["rmluxurygroup"] },
+  { name: "Coco Harris", location: "IL · Chicago North Shore", handles: ["cocoharriscompass"] },
+  { name: "Lindsey Pryor", location: "MO · Kansas City", handles: ["lindseypryorkc"] },
+  { name: "Maryanne Elsaesser", location: "NJ · Bergen County", handles: ["nj_home_navigators"] },
+  { name: "Ryan Daniher", location: "NJ · Morris County", handles: ["ryandaniher_compassnj"] },
+  { name: "Michelle Daniher", location: "NJ · Morris County", handles: ["michelledaniher_compassnj"] },
+  { name: "Greg Mire", location: "NY · Brooklyn", handles: ["gregmire"] },
+  { name: "Sandra Bianco", location: "NY · Long Island North Shore", handles: ["sandybiancorealtor"] },
+  { name: "Kelly Forman", location: "NY · Long Island South Shore", handles: ["kelly_a_forman"] },
+  { name: "Hayim Nommaz", location: "NY · Manhattan Downtown", handles: ["hayminyc"] },
+  { name: "Michael Johnson", location: "NY · Manhattan Downtown", handles: ["mikeian72"] },
+  { name: "Kathy Humbert", location: "NC · Charlotte", handles: ["humberthomes"] },
+  { name: "Debbie Van Horn", location: "NC · Raleigh", handles: ["dvhrealestate"] },
+  { name: "Kristen Lampuri", location: "NC · Raleigh", handles: ["triangleagent"] },
+  { name: "Nicole Marcum Rife", location: "PA · Philadelphia Area", handles: ["nicolerife_realtor"] },
+  { name: "Martha Montiel-Lewis", location: "TN · Nashville", handles: ["marthaml615"] },
+  { name: "Lindsay Neuren", location: "TX · Austin", handles: ["lindsayatxrealtor"] },
+  { name: "Carrie Himel", location: "TX · Dallas", handles: ["thecarriehimel"] },
+  { name: "Kyla Linn", location: "TX · Houston", handles: ["kyla.linn"] },
+  { name: "Todd Jackson", location: "TX · San Antonio", handles: ["jtodd_jackson"] },
+  { name: "Somer Padilla", location: "TX · Spring", handles: ["somerlynne"] },
+  { name: "Roy Towse", location: "WA · Bellevue/Seattle Area", handles: ["roytowse"] },
+  { name: "Shar Borg", location: "WI · Milwaukee", handles: ["sharborgmilwaukee"] },
+];
+
+// Flatten into individual followable items (one per handle)
+const ITEMS = [];
+CONTACTS.forEach(c => {
+  c.handles.forEach(h => {
+    ITEMS.push({ id: h, name: c.name, location: c.location, handle: h, allHandles: c.handles });
+  });
+});
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'alpenbloom_followed_v1';
+let followed = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+let currentTab = 'all';
+let sessionQueue = [];   // array of item ids remaining in session
+let sessionActive = false;
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...followed]));
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function renderList() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty-state');
+
+  let items = ITEMS.filter(item => {
+    if (currentTab === 'followed' && !followed.has(item.id)) return false;
+    if (currentTab === 'unfollowed' && followed.has(item.id)) return false;
+    if (q) {
+      return item.name.toLowerCase().includes(q)
+        || item.handle.toLowerCase().includes(q)
+        || item.location.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  grid.innerHTML = '';
+  if (items.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const currentId = sessionActive && sessionQueue.length ? sessionQueue[0] : null;
+
+  items.forEach(item => {
+    const isFollowed = followed.has(item.id);
+    const isCurrent = item.id === currentId;
+    const initials = item.name.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+
+    const card = document.createElement('div');
+    card.className = 'card' + (isFollowed ? ' followed' : '') + (isCurrent ? ' current-session' : '');
+    card.id = 'card-' + item.id;
+
+    const handleHtml = item.allHandles.length > 1
+      ? `<div class="card-handles">${item.allHandles.map(h =>
+          `<a class="card-handle" href="https://instagram.com/${h}" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+            @${h}</a>`).join('')}</div>`
+      : `<a class="card-handle" href="https://instagram.com/${item.handle}" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+          @${item.handle}</a>`;
+
+    card.innerHTML = `
+      <div class="avatar">${initials}</div>
+      <div class="card-body">
+        <div class="card-name">${item.name}</div>
+        <div class="card-location">${item.location}</div>
+        ${handleHtml}
+        <div class="card-actions">
+          <button class="card-btn btn-open" onclick="openProfile('${item.handle}')">Open Profile</button>
+          ${isFollowed
+            ? `<button class="card-btn btn-unmark" onclick="unmark('${item.id}')">Unmark</button>`
+            : `<button class="card-btn btn-mark" onclick="markFollowed('${item.id}')">Mark Followed</button>`}
+        </div>
+      </div>
+      <span class="followed-badge">✓ Followed</span>
+    `;
+    grid.appendChild(card);
+  });
+
+  updateProgress();
+  updateSessionBanner();
+}
+
+function updateProgress() {
+  const total = ITEMS.length;
+  const done = followed.size;
+  document.getElementById('followed-count').textContent = done;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('progress-bar').style.width = (done / total * 100) + '%';
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  ['all','unfollowed','followed'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+  renderList();
+}
+
+// ─── INDIVIDUAL ACTIONS ──────────────────────────────────────────────────────
+function openProfile(handle) {
+  window.open('https://www.instagram.com/' + handle + '/', '_blank', 'noopener');
+}
+
+function markFollowed(id) {
+  followed.add(id);
+  save();
+  renderList();
+}
+
+function unmark(id) {
+  followed.delete(id);
+  save();
+  renderList();
+}
+
+// ─── SESSION ─────────────────────────────────────────────────────────────────
+function startSession() {
+  // Build queue of unfollowed items in order
+  sessionQueue = ITEMS.filter(i => !followed.has(i.id)).map(i => i.id);
+  if (sessionQueue.length === 0) {
+    alert("You've already followed everyone! Reset progress to start over.");
+    return;
+  }
+  sessionActive = true;
+  openCurrentProfile();
+  renderList();
+  document.getElementById('btn-start-session').textContent = '↻ Restart Session';
+}
+
+function openCurrentProfile() {
+  if (!sessionQueue.length) return;
+  const id = sessionQueue[0];
+  openProfile(id);
+}
+
+function reOpenCurrent() {
+  openCurrentProfile();
+}
+
+function markCurrentAndAdvance() {
+  if (!sessionQueue.length) return;
+  const id = sessionQueue.shift();
+  followed.add(id);
+  save();
+  if (sessionQueue.length > 0) {
+    openCurrentProfile();
+  } else {
+    sessionActive = false;
+    alert('🎉 All done! You\'ve followed everyone in the list.');
+  }
+  renderList();
+}
+
+function skipCurrent() {
+  if (!sessionQueue.length) return;
+  const skipped = sessionQueue.shift();
+  sessionQueue.push(skipped); // move to end
+  openCurrentProfile();
+  renderList();
+}
+
+function endSession() {
+  sessionActive = false;
+  sessionQueue = [];
+  renderList();
+}
+
+function updateSessionBanner() {
+  const banner = document.getElementById('session-banner');
+  if (!sessionActive || !sessionQueue.length) {
+    banner.classList.remove('active');
+    return;
+  }
+  banner.classList.add('active');
+  const item = ITEMS.find(i => i.id === sessionQueue[0]);
+  document.getElementById('session-current-name').textContent = item ? `${item.name} (@${item.handle})` : '';
+  document.getElementById('session-pos').textContent = sessionQueue.length + ' account' + (sessionQueue.length !== 1 ? 's' : '');
+}
+
+// ─── BULK ACTIONS ────────────────────────────────────────────────────────────
+function markAllFollowed() {
+  if (!confirm('Mark ALL accounts as followed?')) return;
+  ITEMS.forEach(i => followed.add(i.id));
+  save();
+  renderList();
+}
+
+function resetProgress() {
+  if (!confirm('Reset all follow progress? This cannot be undone.')) return;
+  followed.clear();
+  save();
+  sessionActive = false;
+  sessionQueue = [];
+  document.getElementById('btn-start-session').textContent = 'Start Follow Session';
+  renderList();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>
