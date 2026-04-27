@@ -471,26 +471,8 @@ CONTACTS.forEach(c => {
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'alpenbloom_followed_v1';
-const PRESEED = [
-  // manually followed outside the tool
-  "patrick_crowthers",
-  "emilyshepodd",
-  // colored rows (teal) from spreadsheet
-  "thekarasgroup",
-  "yourowntahoe_scott.willers",
-  "carijaneyoung",
-  "surfcityestates",
-  "realtor_astha.mathur",
-  "andrearuportteam",
-  "thegoodlifedenver",
-  "megallagher_22",
-  "thelizcaldwellgroup",
-  "kyleboz",
-  "mjrgroupe",
-  "sellbuymaria",
-  "kathleenpogany",
-  "rmluxurygroup",
-];
+// All accounts have been followed — seed the full list
+const PRESEED = ITEMS.map(i => i.id);
 let followed = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
 PRESEED.forEach(id => followed.add(id));
 localStorage.setItem(STORAGE_KEY, JSON.stringify([...followed]));
